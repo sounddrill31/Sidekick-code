@@ -1,5 +1,9 @@
-import network
-from time import sleep_ms, ticks_ms, ticks_diff
+from buzzer_sounds import tick_audio
+try:
+    import wifi
+except ImportError:
+    pass
+from hal import sleep_ms, ticks_ms, ticks_diff
 from oled_functions import _text, _draw_ascii, DEFAULT_UPSIDE
 
 # Constants for RSSI to percentage conversion
@@ -64,6 +68,8 @@ def run(env):
     networks = get_wifi_networks()
 
     while True:
+        try: tick_audio()
+        except: pass
         # Check for menu button press to exit
         if menu_button and menu_button.value() == 0:
             print("Menu button pressed, exiting.")

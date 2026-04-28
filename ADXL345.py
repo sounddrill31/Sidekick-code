@@ -2,8 +2,8 @@
 # Optimized for FAST shake detection
 # Interface similar to MPU6050 class
 
-from machine import I2C
-from time import sleep_ms
+from hal import sleep_ms
+
 
 class ADXL345:
     ADDRESS = 0x53
@@ -51,12 +51,35 @@ class ADXL345:
 
     def _init_device(self):
         # Set device to measurement mode
-        self.i2c.writeto_mem(self.ADDRESS, self.REG_POWER_CTL, b'\x08')
+
+        try:
+            # MicroPython style
+            self.i2c.writeto_mem(self.ADDRESS, self.REG_POWER_CTL, b'\x08')
+        except AttributeError:
+            # CircuitPython style
+            while not self.i2c.try_lock():
+                pass
+            try:
+                self.i2c.writeto(self.ADDRESS, bytes([self.REG_POWER_CTL, 0x08]))
+            finally:
+                self.i2c.unlock()
         # Set data format: ±8g range for better shake detection (0x0B = ±8g, full resolution)
-        self.i2c.writeto_mem(self.ADDRESS, self.REG_DATA_FORMAT, b'\x0B')
+
+        try:
+            self.i2c.writeto_mem(self.ADDRESS, self.REG_DATA_FORMAT, b'\x0B')
+        except AttributeError:
+            while not self.i2c.try_lock(): pass
+            try: self.i2c.writeto(self.ADDRESS, bytes([self.REG_DATA_FORMAT, 0x0B]))
+            finally: self.i2c.unlock()
         # Set data rate to 800Hz for fast shake detection (0x0D = 800Hz) rather than full resolution
         # Options: 0x0A=100Hz, 0x0B=200Hz, 0x0C=400Hz, 0x0D=800Hz, 0x0E=1600Hz, 0x0F=3200Hz
-        self.i2c.writeto_mem(self.ADDRESS, self.REG_BW_RATE, b'\x0D')
+
+        try:
+            self.i2c.writeto_mem(self.ADDRESS, self.REG_BW_RATE, b'\x0D')
+        except AttributeError:
+            while not self.i2c.try_lock(): pass
+            try: self.i2c.writeto(self.ADDRESS, bytes([self.REG_BW_RATE, 0x0D]))
+            finally: self.i2c.unlock()
         sleep_ms(10)
 
     def read_accel_data(self):
@@ -67,7 +90,16 @@ class ADXL345:
             else:
                 raise OSError("ADXL345 not available")
         
-        data = self.i2c.readfrom_mem(self.ADDRESS, self.REG_DATAX0, 6)
+
+        try:
+            data = self.i2c.readfrom_mem(self.ADDRESS, self.REG_DATAX0, 6)
+        except AttributeError:
+            data = bytearray(6)
+            while not self.i2c.try_lock(): pass
+            try:
+                self.i2c.writeto_then_readfrom(self.ADDRESS, bytes([self.REG_DATAX0]), data)
+            finally:
+                self.i2c.unlock()
         x = int.from_bytes(data[0:2], 'little', True)
         y = int.from_bytes(data[2:4], 'little', True)
         z = int.from_bytes(data[4:6], 'little', True)

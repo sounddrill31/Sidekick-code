@@ -7,6 +7,7 @@ version = "0.1.0"
 
 [tasks]
 dev = "python upload-to-esp32.py dev"
+simulator = "python studio.py"
 upload = "python upload-to-esp32.py upload"
 list = "python upload-to-esp32.py list"
 fulldev = "python upload-to-esp32.py fulldev"
@@ -23,6 +24,10 @@ scripts = ["startup_scripts/win_setup.bat"]
 [dependencies]
 python = ">=3.13.5,<3.14"
 git = ">=2.49.0,<3"
+pyyaml = ">=6.0.3,<7"
+pillow = ">=12.2.0,<13"
 
 [pypi-dependencies]
 mpremote = ">=1.25.0, <2"
+flet = ">=0.84.0, <0.85"
+pillow = "*"

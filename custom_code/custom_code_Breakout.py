@@ -1,9 +1,10 @@
+from buzzer_sounds import tick_audio
 # custom_code_Breakout.py
 # A clone of the classic Breakout game using the accelerometer.
 
 import random
 import math
-from time import sleep_ms, ticks_ms, ticks_diff
+from hal import sleep_ms, ticks_ms, ticks_diff
 from oled_functions import _text, DEFAULT_UPSIDE
 from ADXL345 import ADXL345
 from buzzer_sounds import play_tone
@@ -192,6 +193,8 @@ def run(env):
     if not adxl.available: _text(oled, "ADXL345 Error", 0, 0, upside_down); oled.show(); sleep_ms(2000); return
 
     while True:
+        try: tick_audio()
+        except: pass
         init_game()
         last_frame_time = ticks_ms()
 
@@ -229,6 +232,8 @@ def run(env):
         oled.show()
 
         while True:
+            try: tick_audio()
+            except: pass
             if ok_button.value() == 0:
                 sleep_ms(200); break
             if menu_button.value() == 0:

@@ -1,8 +1,9 @@
+from buzzer_sounds import tick_audio
 # custom_code_SnakeGame.py
 # A classic Snake game controlled by two buttons.
 
 import random
-from time import sleep_ms, ticks_ms, ticks_diff
+from hal import sleep_ms, ticks_ms, ticks_diff
 from oled_functions import _text, DEFAULT_UPSIDE
 from buzzer_sounds import play_tone
 
@@ -92,6 +93,8 @@ def init_game():
 def spawn_food():
     """Places food at a random, empty grid cell."""
     while True:
+        try: tick_audio()
+        except: pass
         x = random.randint(0, GRID_WIDTH - 1)
         y = random.randint(0, GRID_HEIGHT - 1)
         if (x, y) not in game_state["snake"]:
@@ -191,6 +194,8 @@ def run(env):
     if not all([oled, menu_button, ok_button]): print("Missing required hardware"); return
 
     while True:
+        try: tick_audio()
+        except: pass
         init_game()
         # Show start screen
         oled.fill(0)

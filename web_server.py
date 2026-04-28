@@ -1,14 +1,20 @@
-import network
-import uasyncio as asyncio
+try:
+    import network
+except ImportError:
+    pass
+try:
+    import uasyncio as asyncio
+except ImportError:
+    import asyncio
 import time
 import binascii
 import os
-import ujson as json
+import json
 import sys
 import io
 
 import settings_store
-from machine import Pin, reset
+from hal import Pin, reset
 from pin_values import code_debug_pin_value
 from menu import get_preserved_files
 from oled_functions import update_oled
@@ -175,13 +181,16 @@ async def main(oled, upside_down):
     }
     _app_runner = AppRunner(env)
 
-    ap = network.WLAN(network.AP_IF)
-    ap.active(True)
-    password = settings_store.get_ap_password()
-    sidekick_id = settings_store.get_sidekick_id()
-    ssid = f"Sidekick_{sidekick_id}"
-    ap.config(essid=ssid, password=password, authmode=network.AUTH_WPA_WPA2_PSK)
-    while not ap.active(): time.sleep(0.1)
+    try:
+        import wifi
+        password = settings_store.get_ap_password()
+        sidekick_id = settings_store.get_sidekick_id()
+        ssid = f"Sidekick_{sidekick_id}"
+        wifi.radio.start_ap(ssid, password)
+    except ImportError:
+        # Fallback for simulator
+        ssid = "Simulator_Web"
+        password = "None"
 
     oled.fill(0)
     update_oled(oled, "text", "Web Server Mode", upside_down, line=1)
@@ -200,7 +209,11 @@ async def main(oled, upside_down):
     
     server.close()
     await server.wait_closed()
-    ap.active(False)
+    try:
+        import wifi
+        wifi.radio.stop_ap()
+    except:
+        pass
 
 def finish():
     global _oled, _upside_down
@@ -221,7 +234,7 @@ def start_web_server(oled, upside_down):
         # This is important to allow the event loop to be reused.
         asyncio.new_event_loop()
         # Add the hack here
-        from machine import reset
+        from hal import reset
         from oled_functions import update_oled
         from time import sleep_ms
 

@@ -1,5 +1,6 @@
-from time import sleep_ms, ticks_ms, ticks_diff
-from machine import Pin
+from buzzer_sounds import tick_audio
+from hal import sleep_ms, ticks_ms, ticks_diff
+from hal import Pin
 import ubluetooth as bluetooth
 import struct
 
@@ -166,6 +167,8 @@ def run(env):
     HOLD_THRESHOLD_MS = 700 # Milliseconds for a "hold" action
 
     while True:
+        try: tick_audio()
+        except: pass
         # Update connection status
         if ble_hid and ble_hid.is_connected() and connection_status != "Connected":
             connection_status = "Connected"

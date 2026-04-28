@@ -1,0 +1,7 @@
+pins:
+  button_1: 1
+  button_2: 0
+  buzzer: 8
+  led: 1
+  i2c_scl: 5
+  i2c_sda: 4

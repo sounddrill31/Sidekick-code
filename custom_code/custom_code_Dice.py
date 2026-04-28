@@ -1,9 +1,10 @@
+from buzzer_sounds import tick_audio
 
 import random
-from machine import Pin, ADC
-import framebuf
+from hal import Pin, ADC
+
 from pin_values import code_ok_pin_value, code_debug_pin_value
-from time import sleep_ms, ticks_ms, ticks_diff
+from hal import sleep_ms, ticks_ms, ticks_diff
 
 # ADC pin for entropy
 ENTROPY_PIN = 34
@@ -96,6 +97,8 @@ def run(env):
     display_roll_and_prompt(current_roll)
 
     while True:
+        try: tick_audio()
+        except: pass
         if ok_button.value() == 0:
             # Wait for button release to avoid multiple triggers
             while ok_button.value() == 0:

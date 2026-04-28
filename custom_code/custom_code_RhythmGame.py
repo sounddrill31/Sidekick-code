@@ -1,10 +1,11 @@
+from buzzer_sounds import tick_audio
 # custom_code_RhythmGame.py
 # A procedural rhythm game called Button Bash Rhapsody.
 
 import random
-from time import sleep_ms, ticks_ms, ticks_diff
+from hal import sleep_ms, ticks_ms, ticks_diff
 from oled_functions import _text, _draw_ascii, DEFAULT_UPSIDE
-from machine import Pin, PWM
+from hal import Pin, PWM
 from pin_values import buzzer_pin_value
 import settings_store
 
@@ -184,6 +185,8 @@ def run(env):
 
     # --- Start Menu Loop ---
     while True:
+        try: tick_audio()
+        except: pass
         draw_start_menu(oled, upside_down)
         if b2.value() == 0: # OK button to start
             while b2.value() == 0: sleep_ms(10)

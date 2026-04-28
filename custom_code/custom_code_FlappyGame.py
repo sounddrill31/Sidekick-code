@@ -1,8 +1,9 @@
+from buzzer_sounds import tick_audio
 # custom_code_FlappyGame.py
 # A clone of the Flappy Bird game, inspired by the Android Lollipop easter egg.
 
 import random
-from time import sleep_ms, ticks_ms, ticks_diff
+from hal import sleep_ms, ticks_ms, ticks_diff
 from oled_functions import _text, DEFAULT_UPSIDE
 from buzzer_sounds import play_tone
 
@@ -152,6 +153,8 @@ def run(env):
     if not all([oled, flap_button, menu_button]): print("Missing required hardware"); return
 
     while True:
+        try: tick_audio()
+        except: pass
         init_game()
         oled.fill(0); _text(oled, "Flappy", 40, 20, upside_down); _text(oled, "Press OK", 32, 40, upside_down); oled.show()
         while flap_button.value() == 1:

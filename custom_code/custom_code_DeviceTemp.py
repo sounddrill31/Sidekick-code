@@ -1,6 +1,10 @@
-import esp32
+from buzzer_sounds import tick_audio
+try:
+    import microcontroller
+except:
+    pass
 from oled_functions import _text, _draw_ascii, DEFAULT_UPSIDE
-from time import sleep_ms
+from hal import sleep_ms
 
 # Function to get the internal temperature in Celsius
 def get_device_temperature_celsius():
@@ -19,6 +23,8 @@ def run(env):
         return
 
     while True:
+        try: tick_audio()
+        except: pass
         # Check for menu button press to exit
         if menu_button and menu_button.value() == 0: # Assuming active low
             print("Menu button pressed, exiting.") # Debug print
