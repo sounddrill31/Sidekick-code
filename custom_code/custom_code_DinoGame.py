@@ -1,8 +1,9 @@
+from buzzer_sounds import tick_audio
 # custom_code_DinoGame.py
 # A clone of the classic Chrome Dino game.
 
 import random
-from time import sleep_ms, ticks_ms, ticks_diff
+from hal import sleep_ms, ticks_ms, ticks_diff
 from oled_functions import _text, DEFAULT_UPSIDE
 from buzzer_sounds import play_tone
 
@@ -157,6 +158,8 @@ def run(env):
     if not all([oled, jump_button, menu_button]): print("Missing required hardware"); return
 
     while True:
+        try: tick_audio()
+        except: pass
         init_game()
         last_frame_time = ticks_ms()
 

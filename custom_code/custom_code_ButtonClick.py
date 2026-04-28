@@ -1,6 +1,7 @@
-from time import sleep_ms
-from machine import Pin
-import framebuf
+from buzzer_sounds import tick_audio
+from hal import sleep_ms
+from hal import Pin
+
 from pin_values import code_ok_pin_value, code_debug_pin_value
 
 def run(env):
@@ -47,6 +48,8 @@ def run(env):
 
     press_count = 0
     while True:
+        try: tick_audio()
+        except: pass
         if menu_button and menu_button.value() == 0:
             if oled: oled.fill(0); oled.show()
             return

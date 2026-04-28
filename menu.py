@@ -1,9 +1,8 @@
-from machine import Pin
-from time import sleep_ms, ticks_ms, ticks_diff
+from hal import Pin, reset
+from hal import sleep_ms, ticks_ms, ticks_diff
 from pin_values import code_debug_pin_value, buzzer_pin_value, led_pin_value, code_ok_pin_value
 import settings_store
-import framebuf
-import ujson as json
+import json
 import os, sys
 import oled_functions
 
@@ -40,7 +39,7 @@ def _ensure_example():
         try:
             with open(example, 'w') as f:
                 f.write(('# Auto-restored button counter example.\n' 
-                         'from machine import Pin\n' 
+                         'from hal import Pin, reset\n'
                          'from time import sleep_ms\n' 
                          'from pin_values import code_ok_pin_value, code_debug_pin_value\n' 
                          'def run(env):\n' 
@@ -112,7 +111,7 @@ def _run_script(filename, env):
                     while ok_button.value() == 0: sleep_ms(20) # Wait for release
 
     except Exception as e:
-        sys.print_exception(e, sys.stderr) # Print full traceback to console
+        print(e) # Print full traceback to console
         print('Error executing', filename, e)
         oled = env.get('oled')
         if oled:
@@ -140,22 +139,14 @@ def _run_script(filename, env):
                 while ok_button.value() == 0: sleep_ms(20) # Wait for release
 
 # Helper to render text respecting upside_down
+
 def _text(oled, s, x, y, upside_down=False):
-    if not upside_down:
-        oled.text(s, x, y)
-        return
-    w = len(s) * 8
-    h = 8
-    buf = bytearray(w * h // 8)
-    fb = framebuf.FrameBuffer(buf, w, h, framebuf.MONO_VLSB)
-    fb.text(s, 0, 0, 1)
-    for i in range(w):
-        for j in range(h):
-            if fb.pixel(i, j):
-                fx = 128 - (x + (i + 1))
-                fy = 64 - (y + (j + 1))
-                if 0 <= fx < 128 and 0 <= fy < 64:
-                    oled.pixel(fx, fy, 1)
+    if not oled: return
+    if hasattr(oled, 'text'):
+        if upside_down:
+            oled.text(s, 128 - (x + len(s)*8), 64 - (y + 8), 1)
+        else:
+            oled.text(s, x, y)
 
 def _reinit_buttons():
     """(Re)initialize button pins. Safe if hardware absent."""
@@ -337,8 +328,8 @@ def open_menu(oled=None, debug_mode=False, upside_down=False, called_from_main=T
                     web_server.start_web_server(oled, upside_down)
                 elif item['key'] == 'reset':
                     settings_store.reset_settings()
-                    import machine
-                    machine.reset()
+                    import sys
+                    reset()
                 elif item['key'] in ('exit','back'):
                     while code_ok_pin.value()==0:
                         sleep_ms(15)
@@ -354,8 +345,11 @@ def _execute_code_menu(oled, debug_mode, upside_down, env):
     all_scripts = _list_custom_code()
     
     try:
-        s = os.statvfs('/')
-        free_kb = (s[0] * s[3]) // 1024
+        try:
+            s = os.statvfs('/')
+            free_kb = (s[0] * s[3]) // 1024
+        except Exception:
+            free_kb = 0
         storage_str = f'{free_kb}KB'
     except Exception:
         storage_str = ''

@@ -1,7 +1,7 @@
 # Simple persistent settings store for MicroPython
 # Stores settings in a small JSON file on the device filesystem.
 
-import ujson as json
+import json
 import os
 import random
 import binascii
@@ -71,7 +71,7 @@ def get_sidekick_id():
     if "sidekick_id" not in _settings or _settings["sidekick_id"] is None:
         # Generate a new unique ID if it doesn't exist
         # Using os.urandom for a reasonably unique ID in MicroPython, truncated to 4 hex digits
-        _settings["sidekick_id"] = binascii.hexlify(os.urandom(2)).decode('utf-8') # 2 bytes = 4 hex digits
+        _settings["sidekick_id"] = ''.join(random.choice('0123456789ABCDEF') for _ in range(4)) # 2 bytes = 4 hex digits
         _save()
     return _settings["sidekick_id"]
 

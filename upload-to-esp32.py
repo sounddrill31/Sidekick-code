@@ -30,7 +30,13 @@ from typing import List, Optional, Tuple
 FILE_PATTERNS: List[str] = [
     "boot.py",
     "main.py",
+    "hal.py",
+    "hardware.yaml",
+    "studio.py",
+    "AGENTS.md",
     "menu.py",
+    "personality.py",
+
     "pin_values.py",
     "happy_meter.py",
     "buzzer_sounds.py",

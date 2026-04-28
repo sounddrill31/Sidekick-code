@@ -7,21 +7,26 @@
 SET_DEBUG = False  # Will be set to True automatically if hardware fails
 
 from ADXL345 import ADXL345
-from machine import Pin, I2C
-from time import sleep_ms
+from hal import Pin, hal
+from hal import sleep_ms
 from buzzer_sounds import (
     startup_shush, startup_sequence, happy_sound,
     angry_sound, shook_sound, headpat_sound, curious_scared_sound
 )
 from happy_meter import meter as get_happy
+from personality import personality
+from buzzer_sounds import tick_audio
 from menu import open_menu
 from pin_values import code_debug_pin_value
-import ssd1306
+try:
+    import ssd1306
+except ImportError:
+    pass
 import oled_functions
 from collections import deque
 import math
 
-import network
+
 
 # Deactivate AP on boot to ensure clean state
 # ap_if = network.WLAN(network.AP_IF)
@@ -43,13 +48,34 @@ def safe_oled_update(display_type, value=None):
 import settings_store
 
 # === OLED & I2C Initialization ===
-i2c_bus = I2C(0, scl=Pin(5), sda=Pin(4), freq=400_000)  # SCL=5, SDA=4
-sleep_ms(100)  # Wait for I2C bus to settle
+
+from pin_values import i2c_scl_pin, i2c_sda_pin
+i2c_bus = hal.get_i2c(scl_pin=i2c_scl_pin, sda_pin=i2c_sda_pin, freq=400_000)
+sleep_ms(100)
 
 # Try to initialize OLED - enable debug mode if it fails
 oled = None
 try:
-    oled = ssd1306.SSD1306_I2C(128, 64, i2c_bus)
+
+    if hal.on_device:
+        # In CircuitPython we might use adafruit_ssd1306
+        # But keeping it similar, using the ported lib or standard wrapper
+        try:
+            import adafruit_ssd1306
+            oled = adafruit_ssd1306.SSD1306_I2C(128, 64, i2c_bus)
+        except ImportError:
+            try:
+                import ssd1306
+                oled = ssd1306.SSD1306_I2C(128, 64, i2c_bus)
+            except:
+                oled = None
+    else:
+        oled = hal.oled
+        if oled is None:
+            from hal import OledMock
+            oled = OledMock()
+            hal.oled = oled
+
     print("✅ OLED initialized successfully")
 except OSError as e:
     SET_DEBUG = True  # Enable debug mode on failure
@@ -122,9 +148,8 @@ baseline_noise = BASELINE_NOISE_START
 
 # === STARTUP/INTRO ===
 print("🤖 Sidekick Starting Up! (˶ᵔ ᵕ ᵔ˶)")
+personality.set_mood("happy", 0)
 startup_shush()
-
-safe_oled_update("happy", 85)
 startup_sequence()
 print("🎮 Sidekick Ready! (っ´ω`)ﾉ")
 
@@ -137,116 +162,121 @@ except Exception as e:
         print(f"⚠️ Initial accel read failed: {e}")
 
 # === MAIN LOOP ===
-while True:
-    try:
-        # Build env reference for dynamic code each loop (lightweight)
-        env = {
-            'oled': oled,
-            'mpu': mpu,
-            'i2c': i2c_bus, # Add i2c bus to env
-            'open_menu': lambda : open_menu(oled, SET_DEBUG, UPSIDE_DOWN, True, env=env),
-        }
-        # Read accelerometer data and calculate movement force
+def main_loop():
+    global previous_accel, baseline_noise, movement_count, happy_level
+    global shake_count, gentle_movement_count
+
+    while True:
         try:
-            current_accel = mpu.read_accel_data()
-            
-            # Calculate the difference from the previous reading
-            diff_x = current_accel[0] - previous_accel[0]
-            diff_y = current_accel[1] - previous_accel[1]
-            diff_z = current_accel[2] - previous_accel[2]
-            
-            # Calculate the magnitude of the difference vector
-            movement_force = math.sqrt(diff_x**2 + diff_y**2 + diff_z**2)
-            
-            # Update the previous acceleration value for the next iteration
-            previous_accel = current_accel
-            
-            # Add the new force to our history
-            movement_history.append(movement_force)
-            
-            if SET_DEBUG:
-                print(f"📊 IMU: accel={current_accel}, force={movement_force:.1f}")
-        except Exception as e:
-            movement_force = 0
-            if SET_DEBUG:
-                print(f"💥 Accelerometer error: {e}")
-
-        # === Adaptive noise baseline update ===
-        # Only update baseline with very low movements close to current baseline
-        if movement_force < (baseline_noise + 600):  # narrower adaptive window
-            baseline_noise += NOISE_ALPHA * (movement_force - baseline_noise)
-
-        # Calculate the average movement force from the history
-        average_force = sum(movement_history) / MOVEMENT_HISTORY_SIZE
-        range_force = max(movement_history) - min(movement_history)
-        active_samples = sum(1 for f in movement_history if f > (baseline_noise + ACTIVE_MARGIN))
-
-        if SET_DEBUG:
-            print(f"🔎 avg={average_force:.0f} base={baseline_noise:.0f} rng={range_force:.0f} act={active_samples}")
-
-        # Shake reactions
-        if movement_count >= MOVEMENT_SENSITIVITY:
-            print("😵 I'm getting dizzy! (⸝⸝๑﹏๑⸝⸝)")
-            safe_oled_update("shake")
-            shook_sound()
-            sleep_ms(100)
-            shook_sound()
-            shake_count += 1
-            movement_count = 0
-            if shake_count >= SHAKE_THRESHOLD:
-                happy_level = 0
-                shake_count = 0
-                print("💔 All trust lost! I'm extremely dizzy and sad...")
-                sleep_ms(150)
-                safe_oled_update("happy", 10)
-            continue
-
-        # Movement logic based on refined criteria
-        is_still = ((range_force < STILL_RANGE_THRESHOLD and active_samples < GENTLE_ACTIVE_MIN_SAMPLES) or (average_force <= baseline_noise + ACTIVE_MARGIN))
-
-        if average_force <= GENTLE_MOVEMENT_MIN or is_still:
-            # Reset counters if movement stops or treated as still
-            movement_count = 0
-            gentle_movement_count = 0
-        elif GENTLE_MOVEMENT_MIN < average_force <= GENTLE_MOVEMENT_MAX:
-            # If movement is gentle and shows real variation, increment gentle counter
-            gentle_movement_count += 1
-            movement_count = 0 # Reset rough movement counter
-            if SET_DEBUG:
-                print(f"🌱 gentle_progress={gentle_movement_count}/{GENTLE_MOVEMENT_THRESHOLD}")
-            if gentle_movement_count >= GENTLE_MOVEMENT_THRESHOLD:
-                print("😊 This is a nice stroll! (´▽｀)")
-                happy_level = get_happy("add", happy_level, 0.1) # Gradual increase
-                gentle_movement_count = 0 # Reset after reward
-        elif average_force >= ROUGH_MOVEMENT:
-            # If movement is rough, increment rough counter
-            movement_count += 1
-            gentle_movement_count = 0 # Reset gentle counter
-            if happy_level < 75:
-                angry_sound()
-                print("😠 Hey! What was that for! ヽ(｀Д´)ﾉ")
-            else:
-                curious_scared_sound()
-                print("😮 Whoa, are you taking me somewhere? (ﾟοﾟ)")
-            
-            # Safe happiness adjustment
+            # Build env reference for dynamic code each loop (lightweight)
+            env = {
+                'oled': oled,
+                'mpu': mpu,
+                'i2c': i2c_bus, # Add i2c bus to env
+                'open_menu': lambda : open_menu(oled, SET_DEBUG, UPSIDE_DOWN, True, env=env),
+            }
+            # Read accelerometer data and calculate movement force
             try:
-                happy_level = get_happy("reduce", happy_level)
-            except TypeError:
-                # Fallback for function signature issues
-                happy_level = max(0, happy_level - 10)
+                current_accel = mpu.read_accel_data()
 
-        # Regular mood display
-        safe_oled_update("happy", happy_level)
+                # Calculate the difference from the previous reading
+                diff_x = current_accel[0] - previous_accel[0]
+                diff_y = current_accel[1] - previous_accel[1]
+                diff_z = current_accel[2] - previous_accel[2]
 
-        # Debug menu access
-        if debug_button.value() == 0:
-            open_menu(oled, SET_DEBUG, UPSIDE_DOWN, True, env)
-            startup_sequence()
-            safe_oled_update("happy", 85)
+                # Calculate the magnitude of the difference vector
+                movement_force = math.sqrt(diff_x**2 + diff_y**2 + diff_z**2)
 
-        sleep_ms(50)  # Faster loop for better shake detection (was 150ms)
+                # Update the previous acceleration value for the next iteration
+                previous_accel = current_accel
 
-    except Exception as e:
-        print("Error in main loop:", e)
-        sleep_ms(1000)
+                # Add the new force to our history
+                movement_history.append(movement_force)
+
+                if SET_DEBUG:
+                    print(f"📊 IMU: accel={current_accel}, force={movement_force:.1f}")
+            except Exception as e:
+                movement_force = 0
+                if SET_DEBUG:
+                    print(f"💥 Accelerometer error: {e}")
+
+            # === Adaptive noise baseline update ===
+            # Only update baseline with very low movements close to current baseline
+            if movement_force < (baseline_noise + 600):  # narrower adaptive window
+                baseline_noise += NOISE_ALPHA * (movement_force - baseline_noise)
+
+            # Calculate the average movement force from the history
+            average_force = sum(movement_history) / MOVEMENT_HISTORY_SIZE
+            range_force = max(movement_history) - min(movement_history)
+            active_samples = sum(1 for f in movement_history if f > (baseline_noise + ACTIVE_MARGIN))
+
+            if SET_DEBUG:
+                print(f"🔎 avg={average_force:.0f} base={baseline_noise:.0f} rng={range_force:.0f} act={active_samples}")
+
+            # Shake reactions
+            if movement_count >= MOVEMENT_SENSITIVITY:
+                print("😵 I'm getting dizzy! (⸝⸝๑﹏๑⸝⸝)")
+                personality.set_mood("shake", 2000, "happy")
+                shook_sound()
+                # Wait a bit
+                # but since shook_sound
+                # We can let it play out fully.
+                shake_count += 1
+                movement_count = 0
+                if shake_count >= SHAKE_THRESHOLD:
+                    happy_level = 0
+                    shake_count = 0
+                    print("💔 All trust lost! I'm extremely dizzy and sad...")
+                    sleep_ms(150)
+                    personality.set_mood("dizzy", 5000, "sad")
+                continue
+
+            # Movement logic based on refined criteria
+            is_still = ((range_force < STILL_RANGE_THRESHOLD and active_samples < GENTLE_ACTIVE_MIN_SAMPLES) or (average_force <= baseline_noise + ACTIVE_MARGIN))
+
+            if average_force <= GENTLE_MOVEMENT_MIN or is_still:
+                # Reset counters if movement stops or treated as still
+                movement_count = 0
+                gentle_movement_count = 0
+            elif GENTLE_MOVEMENT_MIN < average_force <= GENTLE_MOVEMENT_MAX:
+                # If movement is gentle and shows real variation, increment gentle counter
+                gentle_movement_count += 1
+                movement_count = 0 # Reset rough movement counter
+                if SET_DEBUG:
+                    print(f"🌱 gentle_progress={gentle_movement_count}/{GENTLE_MOVEMENT_THRESHOLD}")
+                if gentle_movement_count >= GENTLE_MOVEMENT_THRESHOLD:
+                    print("😊 This is a nice stroll! (´▽｀)")
+                    happy_level = get_happy("add", happy_level, 0.1) # Gradual increase
+                    gentle_movement_count = 0 # Reset after reward
+            elif average_force >= ROUGH_MOVEMENT:
+                # If movement is rough, increment rough counter
+                movement_count += 1
+                gentle_movement_count = 0 # Reset gentle counter
+                if happy_level < 75:
+                    angry_sound()
+                    print("😠 Hey! What was that for! ヽ(｀Д´)ﾉ")
+                else:
+                    curious_scared_sound()
+                    print("😮 Whoa, are you taking me somewhere? (ﾟοﾟ)")
+
+                # Safe happiness adjustment
+                happy_level = get_happy("reduce", happy_level, 1.0)
+
+            # --- Tick Audio and Personality ---
+            tick_audio()
+            face, x_offset = personality.tick(movement_force)
+            oled_functions.render_face(oled, face, x_offset, UPSIDE_DOWN, SET_DEBUG)
+
+            # Debug menu access
+            if debug_button.value() == 0:
+                open_menu(oled, SET_DEBUG, UPSIDE_DOWN, True, env)
+                startup_sequence()
+                personality.set_mood("happy", 0)
+
+            sleep_ms(50)  # Faster loop for better shake detection (was 150ms)
+
+        except Exception as e:
+            print("Error in main loop:", e)
+            sleep_ms(1000)
+if __name__ == '__main__':
+        main_loop()

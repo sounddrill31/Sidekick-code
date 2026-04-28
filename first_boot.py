@@ -1,7 +1,7 @@
 import oled_functions
 import settings_store
-from machine import Pin
-from time import sleep_ms, ticks_ms, ticks_diff
+from hal import Pin
+from hal import sleep_ms, ticks_ms, ticks_diff
 from pin_values import code_debug_pin_value, code_ok_pin_value
 
 def run_first_boot(oled, upside_down):

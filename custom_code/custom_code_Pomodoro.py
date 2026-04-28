@@ -1,6 +1,7 @@
-from time import sleep_ms, ticks_ms, ticks_diff
-from machine import Pin
-import framebuf
+from buzzer_sounds import tick_audio
+from hal import sleep_ms, ticks_ms, ticks_diff
+from hal import Pin
+
 from pin_values import code_ok_pin_value, code_debug_pin_value
 from buzzer_sounds import buzzer_beeping
 
@@ -87,6 +88,8 @@ def run(env):
 
     # --- Main Loop ------------------------------------------------------------
     while True:
+        try: tick_audio()
+        except: pass
         now = ticks_ms()
 
         # --- Timer Events ---

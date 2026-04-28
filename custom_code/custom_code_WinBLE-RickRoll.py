@@ -1,6 +1,7 @@
-from time import sleep_ms
-from machine import Pin
-import framebuf
+from buzzer_sounds import tick_audio
+from hal import sleep_ms
+from hal import Pin
+
 import ubluetooth as bluetooth
 import struct
 
@@ -169,6 +170,8 @@ def run(env):
     display_update(state)
 
     while True:
+        try: tick_audio()
+        except: pass
         if ble_hid and state == 1 and ble_hid._connections:
             buzzer_beeping()
             state = 2
