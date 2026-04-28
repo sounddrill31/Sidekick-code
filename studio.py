@@ -73,20 +73,16 @@ def main(page: ft.Page):
 
     for name, pin in hw.get('pins', {}).items():
         if 'button' in name.lower():
-            btn = ft.ElevatedButton(
-                text=name,
-                on_click=lambda e: None,
-            )
-            # Flet doesn't have native on_mouse_down/up easily without GestureDetector on container.
             # Using simple toggle for mock instead or GestureDetector:
             controls.append(
                 ft.GestureDetector(
-                    content=ft.ElevatedButton(name),
+                    content=ft.ElevatedButton(content=ft.Text(name)),
                     on_tap_down=lambda e, p=pin: btn_down(p),
                     on_tap_up=lambda e, p=pin: btn_up(p),
                     on_pan_end=lambda e, p=pin: btn_up(p)
                 )
             )
+
 
     # --- Simulator Tab ---
     # --- Simulator Tab ---
@@ -122,9 +118,9 @@ def main(page: ft.Page):
             ft.Text("Controls:"),
             ft.Row(controls, alignment=ft.MainAxisAlignment.CENTER),
             ft.Text("Shake Sensor Simulator (ADXL345):"),
-            ft.ElevatedButton("Simulate Shake", on_click=lambda e: setattr(hal, 'sim_shake', True)),
+            ft.ElevatedButton(content=ft.Text("Simulate Shake"), on_click=lambda e: setattr(hal, 'sim_shake', True)),
             ft.Text("Web Preview:"),
-            ft.ElevatedButton("Start Local Web Server", on_click=toggle_web_server)
+            ft.ElevatedButton(content=ft.Text("Start Local Web Server"), on_click=toggle_web_server)
         ],
         alignment=ft.MainAxisAlignment.START,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -145,7 +141,7 @@ def main(page: ft.Page):
     flash_content = ft.Column(
         [
             ft.Text("Flash to ESP32", style=ft.TextThemeStyle.HEADLINE_MEDIUM),
-            ft.ElevatedButton("Upload & Run (fulldev)", on_click=flash_device)
+            ft.ElevatedButton(content=ft.Text("Upload & Run (fulldev)"), on_click=flash_device)
         ],
         alignment=ft.MainAxisAlignment.START,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -186,7 +182,7 @@ def main(page: ft.Page):
         [
             ft.Text("Design Faces & Sounds", style=ft.TextThemeStyle.HEADLINE_MEDIUM),
             json_editor,
-            ft.ElevatedButton("Save to custom_core.json", on_click=update_json)
+            ft.ElevatedButton(content=ft.Text("Save to custom_core.json"), on_click=update_json)
         ],
         alignment=ft.MainAxisAlignment.START,
         expand=True

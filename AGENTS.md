@@ -23,3 +23,6 @@ This project has been rewritten to be fully compatible with CircuitPython while 
 
 ### Extending
 - To add a new sensor, define its logic in its own file using `hal.py` (e.g., `hal.get_i2c()`), add the pins to `hardware.yaml`, and update `studio.py` if a visual representation or manual trigger is desired in the simulator.
+
+### Important Instructions for Agents
+Always test the thing locally once in a way that catches the error you're trying to fix. For example, if you fix a Flet GUI crash, actually run the simulator via `pixi run simulator` or programmatically import it to verify the fix works and doesn't throw a new TypeError. Do not just blindly commit without testing the UI.
