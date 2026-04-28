@@ -212,8 +212,11 @@ def main(page: ft.Page):
 
     def paint_drag(e, r, c):
         if is_dragging[0]:
-            val = 1 if draw_tool[0] == "pen" else 0
-            set_pixel(r, c, val)
+            tool = draw_tool[0]
+            if tool == "pen":
+                set_pixel(r, c, 1)
+            elif tool == "eraser":
+                set_pixel(r, c, 0)
 
     def on_drag_start(e):
         is_dragging[0] = True
@@ -278,16 +281,11 @@ def main(page: ft.Page):
         ft.IconButton(ft.Icons.EDIT, tooltip="Pen", icon_color=ft.Colors.GREEN_400, on_click=lambda e: set_tool("pen")),
         ft.IconButton(ft.Icons.AUTO_FIX_HIGH, tooltip="Eraser", on_click=lambda e: set_tool("eraser")),
         ft.VerticalDivider(),
-        ft.IconButton(ft.Icons.CLEAR, tooltip="Clear Frame", icon_color=ft.Colors.RED_400, on_click=lambda e: set_grid_state([[0]*32 for _ in range(8)])),
-        ft.IconButton(ft.Icons.FORMAT_PAINT, tooltip="Fill Frame", on_click=lambda e: set_grid_state([[1]*32 for _ in range(8)])),
+        ft.IconButton(ft.Icons.COPY, tooltip="Copy Frame", on_click=copy_grid),
+        ft.IconButton(ft.Icons.PASTE, tooltip="Paste Frame", on_click=lambda e: set_grid_state(clipboard_grid) if clipboard_grid else notify_face("Empty!")),
         ft.VerticalDivider(),
-        ft.IconButton(ft.Icons.COPY, tooltip="Copy", on_click=copy_grid),
-        ft.IconButton(ft.Icons.PASTE, tooltip="Paste", on_click=lambda e: set_grid_state(clipboard_grid) if clipboard_grid else notify_face("Clipboard empty!")),
-        ft.VerticalDivider(),
-        ft.IconButton(ft.Icons.ARROW_UPWARD, tooltip="Shift Up", on_click=lambda e: shift_grid(0, -1)),
-        ft.IconButton(ft.Icons.ARROW_DOWNWARD, tooltip="Shift Down", on_click=lambda e: shift_grid(0, 1)),
-        ft.IconButton(ft.Icons.ARROW_BACK, tooltip="Shift Left", on_click=lambda e: shift_grid(-1, 0)),
-        ft.IconButton(ft.Icons.ARROW_FORWARD, tooltip="Shift Right", on_click=lambda e: shift_grid(1, 0)),
+        ft.IconButton(ft.Icons.CLEAR, tooltip="Clear", icon_color=ft.Colors.RED_400, on_click=lambda e: set_grid_state([[0]*32 for _ in range(8)])),
+        ft.IconButton(ft.Icons.FORMAT_PAINT, tooltip="Fill", on_click=lambda e: set_grid_state([[1]*32 for _ in range(8)])),
     ])
 
     # Audio Step Sequencer
@@ -534,33 +532,34 @@ def main(page: ft.Page):
             
             # Face Timeline & Editor
             ft.Container(
-                content=ft.Row([
-                    ft.Column([
-                        ft.Row([
-                            ft.Text("Pixel Editor", size=20, weight="bold", color=ft.Colors.AMBER_100),
-                            face_status,
-                        ]),
-                        ft.Container(
-                            content=pixel_canvas,
-                            padding=10,
-                            bgcolor=ft.Colors.BLACK,
-                            border_radius=5,
-                            width=700,
-                            clip_behavior=ft.ClipBehavior.HARD_EDGE
-                        ),
-                        pixel_toolbar,
-                        ft.Row([
-                            ft.ElevatedButton("Add Frame", icon=ft.Icons.ADD, on_click=add_frame),
-                            ft.IconButton(ft.Icons.COPY, icon_color=ft.Colors.BLUE_400, on_click=duplicate_active_frame),
-                            ft.IconButton(ft.Icons.DELETE, icon_color=ft.Colors.RED_400, on_click=delete_active_frame),
-                        ])
+                content=ft.Column([
+                    ft.Row([
+                        ft.Text("Pixel Editor", size=18, weight="bold", color=ft.Colors.AMBER_100),
+                        face_status,
                     ]),
                     ft.Container(
-                        content=ft.Column([ft.Text("Timeline", size=16), face_list], scroll="auto"),
-                        width=300, bgcolor=ft.Colors.BLACK12, padding=10, border_radius=10, expand=True
-                    )
-                ], vertical_alignment="start"),
-                padding=20, bgcolor=ft.Colors.WHITE10, border_radius=15
+                        content=ft.Column([
+                            ft.Text("Frames", size=12, color=ft.Colors.GREY_500),
+                            face_list,
+                        ], scroll="auto"),
+                        height=60, bgcolor=ft.Colors.BLACK12, border_radius=5
+                    ),
+                    ft.Container(
+                        content=pixel_canvas,
+                        padding=5,
+                        bgcolor=ft.Colors.BLACK,
+                        border_radius=5,
+                        clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                        alignment=ft.Alignment(0, 0)
+                    ),
+                    pixel_toolbar,
+                    ft.Row([
+                        ft.ElevatedButton("+", on_click=add_frame, width=35),
+                        ft.IconButton(ft.Icons.COPY, icon_color=ft.Colors.BLUE_400, on_click=duplicate_active_frame),
+                        ft.IconButton(ft.Icons.DELETE, icon_color=ft.Colors.RED_400, on_click=delete_active_frame),
+                    ])
+                ]),
+                padding=15, bgcolor=ft.Colors.WHITE10, border_radius=12
             ),
             
             ft.Container(height=20),
