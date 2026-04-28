@@ -151,6 +151,7 @@ class OledMock:
 
 class PinWrapper:
     def __init__(self, pin_num, mode=None, pull=None):
+        self.pin_num = pin_num
         if hasattr(board, f"IO{pin_num}"):
             self.pin = digitalio.DigitalInOut(getattr(board, f"IO{pin_num}"))
         elif hasattr(board, f"D{pin_num}"):
@@ -262,21 +263,19 @@ class Pin:
                 return ButtonMock(pin) # Mock pin
         return hal.get_button(pin)
 
+
 class PWM:
     def __new__(cls, pin_obj):
         # We assume pin_obj is a number or has a pin attribute
-        p = pin_obj.pin if hasattr(pin_obj, 'pin') else pin_obj
-        if (ON_DEVICE and 'digitalio' in sys.modules and isinstance(p, sys.modules['digitalio'].DigitalInOut)):
-            # Hacky fallback if passed a PinWrapper's inner object
-            # In CP, you shouldn't use DigitalInOut for PWM. But our code does Pin(pin_val).
-            pass
+        # If it's a PinWrapper, get the original pin_num
+        if hasattr(pin_obj, 'pin_num'):
+            p = pin_obj.pin_num
+        else:
+            p = getattr(pin_obj, 'pin', pin_obj)
+            # If it's still a DigitalInOut object, we have a problem.
+            # It's safer to just require the pin_value directly instead of Pin(pin_value).
 
-        # The original code did: buzzer = PWM(Pin(buzzer_pin_value))
-        # This gives a mock or PinWrapper. We extract the pin number.
-        if isinstance(pin_obj, PinWrapper):
-             # Hard to get pin num back from board object, so we look it up in buzzers? No, let's just pass the pin_value
-             pass
+        # We will add pin_num to PinWrapper just in case.
         return hal.get_buzzer(p)
-
 def reset():
     hal.reset()

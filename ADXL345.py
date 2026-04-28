@@ -36,18 +36,25 @@ class ADXL345:
     def _make_dummy(self):
         """Replace all methods with safe dummy versions"""
         def dummy_read_accel_data():
+            import hal
+            if getattr(hal.hal, 'sim_shake', False):
+                import random
+                # reset flag after generating one heavy shake frame
+                hal.hal.sim_shake = False
+                return (random.randint(-15000, 15000), random.randint(-15000, 15000), random.randint(-15000, 15000))
             return (0, 0, 1000)
         
         def dummy_read_accel_abs():
+            import hal
+            if getattr(hal.hal, 'sim_shake', False):
+                return 15000.0
             return 1000.0
             
         def dummy_is_shaking():
+            import hal
+            if getattr(hal.hal, 'sim_shake', False):
+                return True
             return False
-            
-        # Replace instance methods
-        self.read_accel_data = dummy_read_accel_data
-        self.read_accel_abs = dummy_read_accel_abs
-        self.is_shaking = dummy_is_shaking
 
     def _init_device(self):
         # Set device to measurement mode

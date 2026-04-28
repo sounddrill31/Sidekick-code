@@ -221,7 +221,8 @@ def finish():
     update_oled(_oled, "text", "Setup Complete!", _upside_down, line=2)
     update_oled(_oled, "text", "Rebooting...", _upside_down, line=3)
     _oled.show()
-    time.sleep(2) # Give time to display message
+    import hal
+    hal.sleep_ms(2000) # Give time to display message
     reset()
 
 def start_web_server(oled, upside_down):
@@ -236,7 +237,7 @@ def start_web_server(oled, upside_down):
         # Add the hack here
         from hal import reset
         from oled_functions import update_oled
-        from time import sleep_ms
+        from hal import sleep_ms
 
         oled.fill(0)
         update_oled(oled, "text", "Saving Settings...", upside_down, line=2)

@@ -35,6 +35,7 @@ FILE_PATTERNS: List[str] = [
     "studio.py",
     "AGENTS.md",
     "menu.py",
+    "personality.py",
 
     "pin_values.py",
     "happy_meter.py",

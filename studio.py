@@ -30,7 +30,7 @@ def main(page: ft.Page):
     # -------------------------
     # Simulator State & UI
     # -------------------------
-    oled_image = ft.Image(src_base64="", width=256, height=128, fit=ft.BoxFit.CONTAIN)
+    oled_image = ft.Image(src="", width=256, height=128, fit=ft.BoxFit.CONTAIN)
 
     def update_oled():
         if hal.oled and getattr(hal.oled, '_updated', False):
@@ -50,7 +50,7 @@ def main(page: ft.Page):
             buf = BytesIO()
             img.save(buf, format="PNG")
             b64 = base64.b64encode(buf.getvalue()).decode()
-            oled_image.src_base64 = b64
+            oled_image.src = f"data:image/png;base64,{b64}"
             page.update()
 
     def simulator_loop():
@@ -211,4 +211,4 @@ def main(page: ft.Page):
     threading.Thread(target=run_bot_loop, daemon=True).start()
 
 if __name__ == "__main__":
-    ft.app(target=main)
+    ft.app(main) if not hasattr(ft, 'run') else ft.run(main)

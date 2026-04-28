@@ -216,12 +216,12 @@ def main_loop():
             # Shake reactions
             if movement_count >= MOVEMENT_SENSITIVITY:
                 print("😵 I'm getting dizzy! (⸝⸝๑﹏๑⸝⸝)")
-            personality.set_mood("shake", 2000, "happy")
-            shook_sound()
-            # Wait a bit for the first sound to play before playing it again if we wanted to,
-            # but since shook_sound is a full sequence, we shouldn't just interrupt it.
-            # We can let it play out fully.
-            shake_count += 1
+                personality.set_mood("shake", 2000, "happy")
+                shook_sound()
+                # Wait a bit
+                # but since shook_sound
+                # We can let it play out fully.
+                shake_count += 1
                 movement_count = 0
                 if shake_count >= SHAKE_THRESHOLD:
                     happy_level = 0
