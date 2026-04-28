@@ -68,6 +68,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/da/42/e921fccf5015463e32a3cf6ee7f980a6ed0f395ceeaa45060b61d86486c2/anyio-4.13.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/22/30/7cd8fdcdfbc5b869528b079bfb76dcdf6056b1a2097a662e5e8c04f42965/certifi-2026.4.22-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/cf/2ea7810646e310977b2f756c875b3556dc8893aa706177106712ba8f77f9/flet-0.84.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/8d/ed/4be54b35387675ee719c6882a68b3ea3e43c4b34e25fac49e7f8dcf31335/flet_audio-0.84.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl
@@ -129,6 +130,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/da/42/e921fccf5015463e32a3cf6ee7f980a6ed0f395ceeaa45060b61d86486c2/anyio-4.13.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/22/30/7cd8fdcdfbc5b869528b079bfb76dcdf6056b1a2097a662e5e8c04f42965/certifi-2026.4.22-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/cf/2ea7810646e310977b2f756c875b3556dc8893aa706177106712ba8f77f9/flet-0.84.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/8d/ed/4be54b35387675ee719c6882a68b3ea3e43c4b34e25fac49e7f8dcf31335/flet_audio-0.84.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl
@@ -191,6 +193,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/da/42/e921fccf5015463e32a3cf6ee7f980a6ed0f395ceeaa45060b61d86486c2/anyio-4.13.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/22/30/7cd8fdcdfbc5b869528b079bfb76dcdf6056b1a2097a662e5e8c04f42965/certifi-2026.4.22-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/cf/2ea7810646e310977b2f756c875b3556dc8893aa706177106712ba8f77f9/flet-0.84.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/8d/ed/4be54b35387675ee719c6882a68b3ea3e43c4b34e25fac49e7f8dcf31335/flet_audio-0.84.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl
@@ -246,6 +249,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/da/42/e921fccf5015463e32a3cf6ee7f980a6ed0f395ceeaa45060b61d86486c2/anyio-4.13.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/22/30/7cd8fdcdfbc5b869528b079bfb76dcdf6056b1a2097a662e5e8c04f42965/certifi-2026.4.22-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cb/cf/2ea7810646e310977b2f756c875b3556dc8893aa706177106712ba8f77f9/flet-0.84.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/8d/ed/4be54b35387675ee719c6882a68b3ea3e43c4b34e25fac49e7f8dcf31335/flet_audio-0.84.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl
@@ -418,6 +422,13 @@ packages:
   - flet-cli==0.84.0 ; extra == 'cli'
   - flet-desktop==0.84.0 ; extra == 'desktop'
   - flet-web==0.84.0 ; extra == 'web'
+  requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/8d/ed/4be54b35387675ee719c6882a68b3ea3e43c4b34e25fac49e7f8dcf31335/flet_audio-0.84.0-py3-none-any.whl
+  name: flet-audio
+  version: 0.84.0
+  sha256: 39b9cd1bec0711db9ebf0fedb6a02ad915e709b3206bff1c59bf3faf5eab5bac
+  requires_dist:
+  - flet==0.84.0
   requires_python: '>=3.10'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/git-2.49.0-pl5321hc2ff736_2.conda
   sha256: a92f89cf83b2010b2201df780f6db93595557faeefcb8f89b90cc2a75368f5b2
