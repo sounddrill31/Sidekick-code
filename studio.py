@@ -30,7 +30,7 @@ def main(page: ft.Page):
     # -------------------------
     # Simulator State & UI
     # -------------------------
-    oled_image = ft.Image(src_base64="", width=256, height=128, fit=ft.ImageFit.CONTAIN)
+    oled_image = ft.Image(src_base64="", width=256, height=128, fit=ft.BoxFit.CONTAIN)
 
     def update_oled():
         if hal.oled and getattr(hal.oled, '_updated', False):
