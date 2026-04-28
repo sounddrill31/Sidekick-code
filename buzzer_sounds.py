@@ -36,6 +36,9 @@ _DEFAULT_SEQUENCES = {
     "click_sound": [[3000,20],[4000,20]],
     "startup_sequence": [[2000,15],[2500,15],[3000,15],[3500,15]],
     "curious_scared_sound": [[1319,18],[1568,18],[1760,18]],
+    "sad_sound": [[523,40],[466,40],[415,40],[349,60],[294,80]],
+    "curious_sound": [[784,25],[1047,30]],
+    "scared_sound": [[1568,10],[0,15],[1568,10],[0,20],[784,30]],
     "eepy_sound": [[2093,30],[1760,35],[1568,40],[1397,45],[1568,50],[1319,140]],
     "shook_sound": [[1568,12],[1245,12],[1568,12],[1319,12],[1568,12],[1175,12],[1568,12],[1319,12]],
     "buzzer_beeping": [[1000, 100], [0, 50], [1000, 100], [0, 50], [1000, 100]],
@@ -140,6 +143,15 @@ def startup_sequence():
 
 def curious_scared_sound():
     audio_mgr.play("curious_scared_sound")
+
+def sad_sound():
+    audio_mgr.play("sad_sound")
+
+def curious_sound():
+    audio_mgr.play("curious_sound")
+
+def scared_sound():
+    audio_mgr.play("scared_sound")
 
 def eepy_sound():
     audio_mgr.play("eepy_sound")

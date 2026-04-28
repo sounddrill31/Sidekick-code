@@ -274,7 +274,7 @@ class Hal:
             microcontroller.reset()
         else:
             print("System Reset Requested!")
-            sys.exit(0)
+            raise Exception("SYSTEM_RESET")
 
 # Global HAL instance
 hal = Hal()

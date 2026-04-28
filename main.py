@@ -164,9 +164,13 @@ except Exception as e:
         print(f"⚠️ Initial accel read failed: {e}")
 
 # === MAIN LOOP ===
+IDLE_THRESHOLD_MS = 15000  # 15 seconds of inactivity to become sleepy
+
 def main_loop():
     global previous_accel, baseline_noise, movement_count, happy_level
     global shake_count, gentle_movement_count
+    from hal import ticks_ms, ticks_diff
+    last_active_time = ticks_ms()
 
     while True:
         try:
@@ -215,6 +219,29 @@ def main_loop():
             if SET_DEBUG:
                 print(f"🔎 avg={average_force:.0f} base={baseline_noise:.0f} rng={range_force:.0f} act={active_samples}")
 
+            is_still = ((range_force < STILL_RANGE_THRESHOLD and active_samples < GENTLE_ACTIVE_MIN_SAMPLES) or (average_force <= baseline_noise + ACTIVE_MARGIN))
+
+            if not is_still and average_force > GENTLE_MOVEMENT_MIN:
+                # We have an "interrupt" (movement)
+                if ticks_diff(ticks_ms(), last_active_time) >= IDLE_THRESHOLD_MS:
+                    print("Waking up!")
+                    personality.set_mood("happy", 2000)
+                last_active_time = ticks_ms()
+
+            if ticks_diff(ticks_ms(), last_active_time) >= IDLE_THRESHOLD_MS:
+                # Idle state
+                personality.set_mood("sleepy", 0)
+                tick_audio()
+                face, x_offset = personality.tick(0)
+                oled_functions.render_face(oled, face, x_offset, UPSIDE_DOWN, SET_DEBUG)
+                
+                # Check for menu button press to wake or open menu while asleep
+                if debug_button.value() == 0:
+                    last_active_time = ticks_ms()
+                    open_menu(oled, SET_DEBUG, UPSIDE_DOWN, True, env)
+                sleep_ms(50)
+                continue
+
             # Shake reactions
             if movement_count >= MOVEMENT_SENSITIVITY:
                 print("😵 I'm getting dizzy! (⸝⸝๑﹏๑⸝⸝)")
@@ -262,10 +289,19 @@ def main_loop():
                     print("😮 Whoa, are you taking me somewhere? (ﾟοﾟ)")
 
                 # Safe happiness adjustment
-                happy_level = get_happy("reduce", happy_level, 1.0)
+                if average_force >= ROUGH_MOVEMENT:
+                    happy_level = get_happy("reduce", happy_level, 1.0)
+                    mood = personality.process_triggers("shake", value=average_force)
+                    if not mood:
+                        mood = personality.process_triggers("happiness", value=happy_level)
+                        if mood == "angry":
+                            angry_sound()
+                        elif mood == "curious":
+                            curious_scared_sound()
+                else:
+                    mood = personality.process_triggers("happiness", value=happy_level)
 
-            # --- Tick Audio and Personality ---
-            tick_audio()
+                # --- Tick Audio and Personality ---            tick_audio()
             face, x_offset = personality.tick(movement_force)
             oled_functions.render_face(oled, face, x_offset, UPSIDE_DOWN, SET_DEBUG)
 

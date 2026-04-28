@@ -227,7 +227,8 @@ def finish():
 
 def start_web_server(oled, upside_down, port=80):
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         loop.run_until_complete(main(oled, upside_down, port))
     except Exception as e:
         print(f"Web server error: {e}")

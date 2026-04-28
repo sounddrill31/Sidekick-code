@@ -1,15 +1,34 @@
 from hal import sleep_ms
 import settings_store
 
-def _centered_x(oled, face_str, scale=2):
-    w = len(face_str) * 8 * scale
+def _centered_x(oled, face_data, scale=2):
+    if isinstance(face_data, list):
+        w = len(face_data[0]) * scale if len(face_data) > 0 else 0
+    else:
+        w = len(face_data) * 8 * scale
     w_limit = oled.width if hasattr(oled, 'width') else 128
     return max((w_limit - w) // 2, 0)
 
 
-def _draw_ascii(oled, text, x, y, scale=2, upside_down=False):
-    """Draw scaled ASCII text on oled"""
+def _draw_ascii(oled, face_data, x, y, scale=2, upside_down=False):
+    """Draw scaled ASCII text or pixel grid on oled"""
     if not oled: return
+    if isinstance(face_data, list):
+        # Pixel-wise rendering
+        h = len(face_data)
+        w = len(face_data[0]) if h > 0 else 0
+        for i in range(h):
+            for j in range(w):
+                if int(face_data[i][j]):
+                    if upside_down:
+                        flip_x = oled.width - (x + j * scale + scale)
+                        flip_y = oled.height - (y + i * scale + scale)
+                        if hasattr(oled, 'fill_rect'): oled.fill_rect(flip_x, flip_y, scale, scale, 1)
+                    else:
+                        if hasattr(oled, 'fill_rect'): oled.fill_rect(x + j*scale, y + i*scale, scale, scale, 1)
+        return
+        
+    text = face_data
     try:
         import framebuf
         char_width = 8 * len(text)

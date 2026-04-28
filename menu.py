@@ -141,12 +141,8 @@ def _run_script(filename, env):
 # Helper to render text respecting upside_down
 
 def _text(oled, s, x, y, upside_down=False):
-    if not oled: return
-    if hasattr(oled, 'text'):
-        if upside_down:
-            oled.text(s, oled.width - (x + len(s)*8), oled.height - (y + 8), 1)
-        else:
-            oled.text(s, x, y)
+    import oled_functions
+    oled_functions._text(oled, s, x, y, upside_down, color=1)
 
 def _reinit_buttons():
     """(Re)initialize button pins. Safe if hardware absent."""
