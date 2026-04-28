@@ -13,43 +13,57 @@ except ImportError:
 
 # We need a simple parser for yaml when on device, because pyyaml is not available in circuitpython
 def parse_yaml_pins(yaml_str):
-    pins = {}
+    config = {'pins': {}, 'oled': {'width': 128, 'height': 64}}
     lines = yaml_str.strip().split('\n')
-    in_pins = False
+    current_section = None
     for line in lines:
         line = line.split('#')[0].strip()
         if not line: continue
-        if line == 'pins:':
-            in_pins = True
+        if line.endswith(':'):
+            current_section = line[:-1].strip()
             continue
-        if in_pins and ':' in line:
+        if current_section == 'pins' and ':' in line:
             parts = line.split(':')
             key = parts[0].strip()
             val = parts[1].strip()
             try:
-                pins[key] = int(val)
+                config['pins'][key] = int(val)
             except ValueError:
-                pins[key] = val
-    return pins
+                config['pins'][key] = val
+        elif current_section == 'oled' and ':' in line:
+            parts = line.split(':')
+            key = parts[0].strip()
+            val = parts[1].strip()
+            try:
+                config['oled'][key] = int(val)
+            except ValueError:
+                pass
+    return config
 
-_pins_config = {}
+_hw_config = {}
 try:
     with open('hardware.yaml', 'r') as f:
-        _pins_config = parse_yaml_pins(f.read())
+        _hw_config = parse_yaml_pins(f.read())
 except Exception as e:
     print("Warning: could not load hardware.yaml:", e)
     # Default fallback
-    _pins_config = {
-        'button_1': 1,
-        'button_2': 0,
-        'buzzer': 8,
-        'led': 1,
-        'i2c_scl': 5,
-        'i2c_sda': 4
+    _hw_config = {
+        'pins': {
+            'button_1': 1,
+            'button_2': 0,
+            'buzzer': 8,
+            'led': 1,
+            'i2c_scl': 5,
+            'i2c_sda': 4
+        },
+        'oled': {
+            'width': 128,
+            'height': 64
+        }
     }
 
 def get_pin_value(name):
-    return _pins_config.get(name)
+    return _hw_config['pins'].get(name)
 
 # ----------------- Timing Functions -----------------
 def sleep_ms(ms):
@@ -91,9 +105,15 @@ class ButtonMock:
     def __init__(self, pin):
         self.pin = pin
         self._val = 1 # PULL_UP means default is 1 (unpressed), 0 is pressed
+        self._last_press_time = 0
     def value(self):
+        # If we just released it, stay 'pressed' for a tiny bit to ensure bot loop sees it
+        if self._val == 1 and (ticks_diff(ticks_ms(), self._last_press_time) < 60):
+            return 0
         return self._val
     def set_value(self, v):
+        if v == 0:
+            self._last_press_time = ticks_ms()
         self._val = v
 
 class BuzzerMock:
@@ -118,8 +138,8 @@ class I2CMock:
 
 class OledMock:
     def __init__(self):
-        self.width = 128
-        self.height = 64
+        self.width = _hw_config['oled']['width']
+        self.height = _hw_config['oled']['height']
         self.buffer = bytearray((self.width // 8) * self.height)
         self._updated = False
 
@@ -142,8 +162,19 @@ class OledMock:
                 self.pixel(i, j, color)
 
     def text(self, s, x, y, color=1):
-        # We don't have font in the mock, so we'll just ignore or draw a box
-        pass
+        try:
+            from font8x8 import FONT8X8
+        except ImportError:
+            return
+
+        for char in s:
+            if char in FONT8X8:
+                bitmap = FONT8X8[char]
+                for i in range(8):
+                    for j in range(8):
+                        if (bitmap[i] << j) & 0x80:
+                            self.pixel(x + j, y + i, color)
+            x += 8
 
     def show(self):
         self._updated = True
@@ -198,6 +229,7 @@ class BuzzerWrapper:
 class Hal:
     def __init__(self):
         self.on_device = ON_DEVICE
+        self.hw_config = _hw_config
         self.buttons = {}
         self.buzzers = {}
         self.i2c = None

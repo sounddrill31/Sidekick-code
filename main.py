@@ -56,17 +56,19 @@ sleep_ms(100)
 # Try to initialize OLED - enable debug mode if it fails
 oled = None
 try:
+    oled_w = hal.hw_config['oled']['width']
+    oled_h = hal.hw_config['oled']['height']
 
     if hal.on_device:
         # In CircuitPython we might use adafruit_ssd1306
         # But keeping it similar, using the ported lib or standard wrapper
         try:
             import adafruit_ssd1306
-            oled = adafruit_ssd1306.SSD1306_I2C(128, 64, i2c_bus)
+            oled = adafruit_ssd1306.SSD1306_I2C(oled_w, oled_h, i2c_bus)
         except ImportError:
             try:
                 import ssd1306
-                oled = ssd1306.SSD1306_I2C(128, 64, i2c_bus)
+                oled = ssd1306.SSD1306_I2C(oled_w, oled_h, i2c_bus)
             except:
                 oled = None
     else:

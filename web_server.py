@@ -166,7 +166,7 @@ async def handle_request(reader, writer):
     finally:
         await writer.aclose()
 
-async def main(oled, upside_down):
+async def main(oled, upside_down, port=80):
     global _app_runner, _oled, _upside_down
     _oled = oled
     _upside_down = upside_down
@@ -196,11 +196,11 @@ async def main(oled, upside_down):
     update_oled(oled, "text", "Web Server Mode", upside_down, line=1)
     update_oled(oled, "text", f"AP:{ssid}", upside_down, line=3)
     update_oled(oled, "text", f"Pass: {password}", upside_down, line=4)
-    update_oled(oled, "text", f"192.168.4.1", upside_down, line=5)
+    update_oled(oled, "text", f"Port: {port}", upside_down, line=5)
     update_oled(oled, "text", "(Menu to Exit)", upside_down, line=6)
     oled.show()
 
-    server = await asyncio.start_server(handle_request, '0.0.0.0', 80)
+    server = await asyncio.start_server(handle_request, '0.0.0.0', port)
     menu_button = Pin(code_debug_pin_value, Pin.IN, Pin.PULL_UP)
     while True:
         if menu_button.value() == 0:
@@ -225,10 +225,10 @@ def finish():
     hal.sleep_ms(2000) # Give time to display message
     reset()
 
-def start_web_server(oled, upside_down):
+def start_web_server(oled, upside_down, port=80):
     try:
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(main(oled, upside_down))
+        loop.run_until_complete(main(oled, upside_down, port))
     except Exception as e:
         print(f"Web server error: {e}")
     finally:

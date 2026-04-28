@@ -130,7 +130,7 @@ def _run_script(filename, env):
             else:
                 _text(oled, error_str, 0, 24, upside_down)
 
-            _text(oled, "Press OK", 0, 54, upside_down)
+            _text(oled, "Press OK", 0, oled.height - 10, upside_down)
             oled.show()
             ok_button = env.get('ok_button')
             if ok_button:
@@ -144,7 +144,7 @@ def _text(oled, s, x, y, upside_down=False):
     if not oled: return
     if hasattr(oled, 'text'):
         if upside_down:
-            oled.text(s, 128 - (x + len(s)*8), 64 - (y + 8), 1)
+            oled.text(s, oled.width - (x + len(s)*8), oled.height - (y + 8), 1)
         else:
             oled.text(s, x, y)
 
@@ -210,27 +210,27 @@ def _render_menu(oled, items, idx, debug=False, upside_down=False):
         up_indicator = start > 0
         down_indicator = (start + window_size) < len(items)
         if upside_down:
-            _text(oled, footer, 0, 54, True)
-            base_y = 44
+            _text(oled, footer, 0, oled.height - 10, True)
+            base_y = oled.height - 20
             for line in reversed(lines):
                 _text(oled, line, 0, base_y, True)
                 base_y -= 10
             _text(oled, "Settings", 0, 0, True)
             if up_indicator:
-                _text(oled, "^", 120, 0, True)
+                _text(oled, "^", oled.width - 8, 0, True)
             if down_indicator:
-                _text(oled, "v", 120, 54, True)
+                _text(oled, "v", oled.width - 8, oled.height - 10, True)
         else:
             _text(oled, "Menu", 0, 0, False)
             for i, line in enumerate(lines):
                 _text(oled, line, 0, 12 + i * 10, False)
-            _text(oled, footer, 0, 54, False)
+            _text(oled, footer, 0, oled.height - 10, False)
             if up_indicator:
-                _text(oled, "^", 120, 0, False)
+                _text(oled, "^", oled.width - 8, 0, False)
             if down_indicator:
-                _text(oled, "v", 120, 54, False)
+                _text(oled, "v", oled.width - 8, oled.height - 10, False)
         if debug:
-            _text(oled, "DBG", 100, 0, upside_down)
+            _text(oled, "DBG", oled.width - 28, 0, upside_down)
         oled.show()
     except Exception:
         pass
@@ -247,7 +247,7 @@ def _display_ids(oled, upside_down, ok_button):
         _text(oled, "Sidekick:", 0, 24, upside_down)
         _text(oled, sidekick_name, 0, 36, upside_down)
         _text(oled, f"Sidekick ID:{sidekick_id}", 0, 44, upside_down)
-        _text(oled, "Press OK", 0, 54, upside_down)
+        _text(oled, "Press OK", 0, oled.height - 10, upside_down)
         oled.show()
     else:
         print(f"User: {user_name}")
@@ -372,7 +372,7 @@ def _execute_code_menu(oled, debug_mode, upside_down, env):
                 oled.fill(0)
                 _text(oled, 'Apps', 0, 0, upside_down)
                 if storage_str:
-                    storage_x = 128 - len(storage_str) * 8
+                    storage_x = oled.width - len(storage_str) * 8
                     _text(oled, storage_str, storage_x, 0, upside_down)
 
                 for i, entry in enumerate(view):
@@ -382,10 +382,10 @@ def _execute_code_menu(oled, debug_mode, upside_down, env):
                     _text(oled, (marker+label)[:16], 0, 12 + i*10, upside_down)
                 # Scroll indicators
                 if start > 0:
-                    _text(oled, '^', 120, 0, upside_down)
+                    _text(oled, '^', oled.width - 8, 0, upside_down)
                 if (start + window_size) < len(total_list):
-                    _text(oled, 'v', 120, 54, upside_down)
-                _text(oled, 'OP=Down,OK=Yes', 0, 54, upside_down)
+                    _text(oled, 'v', oled.width - 8, oled.height - 10, upside_down)
+                _text(oled, 'OP=Down,OK=Yes', 0, oled.height - 10, upside_down)
                 oled.show()
             else:
                 print('--- EXECUTE ---')

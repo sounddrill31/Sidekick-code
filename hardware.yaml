@@ -5,3 +5,6 @@ pins:
   led: 1
   i2c_scl: 5
   i2c_sda: 4
+oled:
+  width: 128
+  height: 64
